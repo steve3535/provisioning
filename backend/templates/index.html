@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VM Definition Input</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#domain').change(function() {
+                var domain = $(this).val();
+                $.getJSON('/get_datacenters', {domain: domain}, function(data) {
+                    var options = '<option value="">Select Datacenter</option>';
+                    $.each(data, function(key, val) {
+                        options += '<option value="' + val + '">' + val + '</option>';
+                    });
+                    $('#datacenter').html(options).prop('disabled', false);
+                });
+            });
+
+            $('#datacenter').change(function() {
+                var datacenter = $(this).val();
+                $.getJSON('/get_clusters', {datacenter: datacenter}, function(data) {
+                    var options = '<option value="">Select Cluster/Host</option>';
+                    $.each(data, function(key, val) {
+                        options += '<option value="' + val + '">' + val + '</option>';
+                    });
+                    $('#cluster').html(options).prop('disabled', false);
+                });
+
+                
+                $.getJSON('/get_images', {datacenter: datacenter}, function(data) {
+                    var options = '<option value="">Select Image</option>';
+                    $.each(data, function(key, val) {
+                        options += '<option value="' + val + '">' + val + '</option>';
+                    });
+                    $('#image').html(options).prop('disabled', false);
+                });
+
+                $.getJSON('/get_subnets', {datacenter: datacenter}, function(data) {
+                    var options = '<option value="">Select Subnet</option>';
+                    $.each(data, function(key, val) {
+                        options += '<option value="' + val + '">' + val + '</option>';
+                    });
+                    $('#subnet').html(options).prop('disabled', false);
+                });
+
+            });
+
+            $('#cluster').change(function() {
+                var cluster = $(this).val();
+                $.getJSON('/get_storages', {cluster: cluster}, function(data) {
+                    var options = '<option value="">Select Storage</option>';
+                    $.each(data, function(key, val) {
+                        options += '<option value="' + val + '">' + val + '</option>';
+                    });
+                    $('#storage').html(options).prop('disabled', false);
+                });
+            });            
+
+
+        });
+    </script>
+</head>
+<body>
+    <h1>VM Definition Input</h1>
+    <form action="/submit" method="post">
+        <label for="domain">Domain:</label>
+        <select id="domain" name="domain" required>
+            <option value="">Select Domain</option>
+            {% for domain in domains %}
+            <option value="{{ domain }}">{{ domain }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label for="datacenter">Datacenter:</label>
+        <select id="datacenter" name="datacenter" disabled required></select><br><br>
+
+        <label for="cluster">AHV Cluster/ESX Host:</label>
+        <select id="cluster" name="cluster" disabled required></select><br><br>
+
+        <label for="image">Image:</label>
+        <select id="image" name="image" disabled required></select><br><br>
+
+        <label for="subnet">Subnet:</label>
+        <select id="subnet" name="subnet" disabled required></select><br><br>
+
+        <label for="storage">Storage:</label>
+        <select id="storage" name="storage" disabled required></select><br><br>
+
+        <label for="vm_name">VM Name:</label>
+        <input type="text" id="vm_name" name="vm_name" required><br><br>
+
+        <label for="hostname">Hostname:</label>
+        <input type="text" id="hostname" name="hostname" required><br><br>
+
+        <label for="mem">Memory (MB):</label>
+        <input type="number" id="mem" name="mem" required><br><br>
+
+        <label for="cpu">CPU:</label>
+        <input type="number" id="cpu" name="cpu" required><br><br>
+
+        <label for="disk2_size_gb">Disk 2 Size (GB):</label>
+        <input type="number" id="disk2_size_gb" name="disk2_size_gb" required><br><br>
+
+        <label for="ip">IP Address:</label>
+        <input type="text" id="ip" name="ip" required><br><br>
+
+        <label for="gateway">Gateway:</label>
+        <input type="text" id="gateway" name="gateway" required><br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
