@@ -30,7 +30,7 @@ resource "nutanix_virtual_machine" "{vm_name}" {{
   }}
 
   disk_list {{
-    disk_size_mib = {vm_specs['disk2_size_gb'] * 1024}
+    disk_size_mib = {int(vm_specs['disk2_size_gb']) * 1024}
   }}
 
   nic_list {{
