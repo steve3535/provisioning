@@ -24,6 +24,17 @@
         }
   }
   }
-  ``` 
+  ```
+
+  ## main.tf
+  * this file is the squeleton for everything else  
+  * Typically we will have:  
+    * the definition of the required providers  
+    * the details of the providers (credentials to the providers) - refrenced by variables defined in variables.tf
+
+
+  ## variables.tf
+
+  
   
   
