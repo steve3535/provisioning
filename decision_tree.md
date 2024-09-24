@@ -2,6 +2,7 @@
 graph TD
    A[User] --> B[VM Input Portal]
    B --> C[DOMAIN=LAN]
+   B --> BC[name,cpu,mem,..]
    B --> D[DOMAIN=DMZ]
    C --> E[DC=DC1,image=dc1img]
    C --> F[DC=DC3,image=dc3img]
@@ -15,4 +16,12 @@ graph TD
    H --> N[Cluster=dmz..02,..,..]
    H --> O[Cluster=dmz..04,..,..]
    H --> P[Cluster=dmz..06,..,..]
+   P --> R[YAML DATA]
+   O --> R
+   N --> R
+   M --> R
+   L --> R
+   K --> R
+   J --> R
+   I --> R
 ```
