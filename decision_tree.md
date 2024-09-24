@@ -1,4 +1,4 @@
 ```mermaid
 graph TD
-   A[User] --> B [VM Input Portal]
+   A[User] --> B[VM Input Portal]
 ```
