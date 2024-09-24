@@ -10,18 +10,6 @@ variable "nutanix_password" {
     sensitive = true  
 }
 
-variable "prism_central_dc1" {
-    description = "NUTANIX DC1 PC SERVER"
-    type = string    
-    default = "lu652.lalux.local"
-}
-
-variable "prism_central_dc3" {
-    description = "NUTANIX DC3 PC SERVER"
-    type = string    
-    default = "lu653.lalux.local"
-}
-
 variable "vsphere_username" {
     description = "VSPHERE ADMIN USERNAME"
     type = string
@@ -45,23 +33,28 @@ variable "nutanix_endpoints" {
     default = {
       "dc1" = "lu652.lalux.local"
       "dc3" = "lu653.lalux.local"
-    }
-  
+    }  
 }
 
 variable "nutanix_clusters" {
-    type = map(string)
+    type = map(object({
+        name: string 
+        dc: string
+    }))
     default = {
-      "lu650" = "dc1"
-      "lu651" = "dc3"
+      lu650 = {"name":"LU650", "dc":"dc1"}
+      lu651 = {"name":"LU651", "dc":"dc3"}
     }
 }
 
 variable "nutanix_images" {
-    type = map(string)
+    type = map(object({
+       name: string 
+       dc: string 
+    }))
     default = {
-      "rhel8-dc1" = "dc1"
-      "rhel8-dc3" = "dc3"
+      rhel8-dc1 = {"name":"RHEL8STD-latest","dc":"dc1"} 
+      rhel8-dc3 = {"name":"RHEL8STD-latest","dc":"dc3"} 
     } 
 }
 
@@ -75,4 +68,20 @@ variable "nutanix_storages" {
       "NUT_AHV_DC3_01" = "lu651"
       "NUT_AHV_DC1_RH_PGSQL" = "lu651"
     } 
+}
+
+variable "lu650_storages" {
+    type = map(string)
+}
+
+variable "lu651_storages" {
+    type = map(string)
+}
+
+variable "dc1_subnets" {
+    type = map(string)
+}
+
+variable "dc3_subnets" {
+    type = map(string)
 }

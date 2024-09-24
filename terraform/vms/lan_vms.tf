@@ -1,11 +1,11 @@
 
-      resource "nutanix_virtual_machine" "toto1" {
-        name                 = "toto1"
+      resource "nutanix_virtual_machine" "toto3" {
+        name                 = "toto3"
         description          = ""
         cluster_uuid         = data.nutanix_cluster.dc3_clusters["lu651"].metadata.uuid 
-        num_vcpus_per_socket = 2
+        num_vcpus_per_socket = 1
         num_sockets          = 1
-        memory_size_mib      = 4096
+        memory_size_mib      = 1024
 
         disk_list {
           data_source_reference = {
@@ -15,17 +15,17 @@
         }
 
         disk_list {
-          disk_size_mib = 102400
+          disk_size_mib = 10240
           storage_config {
             storage_container_reference {
               kind = "storage_container"
-              uuid = var.lu651_storages["Nutanix_fs01_dr"]
+              uuid = var.lu651_storages["NUT_AHV_DC3_VIE"]
             }
           }
         }
 
         nic_list {
-          subnet_uuid = var.dc3_subnets["New_PROD 192.168.25.x"]
+          subnet_uuid = var.dc3_subnets["VLAN-128-Server"]
         }  
      }
     

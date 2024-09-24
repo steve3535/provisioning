@@ -50,20 +50,19 @@ def get_domains():
 
 def get_datacenters(domain):
     if domain == "LAN":
-        return ['nutanix.dc1','nutanix.dc3']
+        return ['dc1','dc3']
     else:
         return ['NUT-DMZ-DC01','NUT-DMZ-DC02']
 
 def get_ahv_pc(datacenter):
-    return {"nutanix.dc1":"lu652.lalux.local","nutanix.dc3":"lu653.lalux.local"}[datacenter]
+    return {"dc1":"lu652.lalux.local","dc3":"lu653.lalux.local"}[datacenter]
 
 def get_esx_vcenter():
     return "lu309.lalux.local"
-
 def get_images(datacenter):
     images = {
-        'nutanix.dc1': ['rhel8-dc1'],
-        'nutanix.dc3': ['rhel8-dc3'],
+        'dc1': ['rhel8-dc1'],
+        'dc3': ['rhel8-dc3'],
         'NUT-DMZ-DC01': ['esx_lib1_item'],
         'NUT-DMZ-DC02': ['esx_lib2_item']        
     }
@@ -72,8 +71,8 @@ def get_images(datacenter):
 
 def get_clusters(datacenter):
     clusters = {
-        'nutanix.dc1': ['lu650.lalux.local'],
-        'nutanix.dc3': ['lu651.lalux.local'],
+        'dc1': ['lu650.lalux.local'],
+        'dc3': ['lu651.lalux.local'],
         'NUT-DMZ-DC01': ['nut-dmz-01','nut-dmz-03','nut-dmz-05','nut-dmz-07','nut-dmz-09'],
         'NUT-DMZ-DC02': ['nut-dmz-02','nut-dmz-04','nut-dmz-06','nut-dmz-08','nut-dmz-10']
     }
@@ -230,8 +229,8 @@ def storages():
 def submit():
     try:
       yaml_data = process_vm_data(request.form)
+      #result = create_terraform_file(yaml_data)
       result = create_terraform_file(yaml_data)
-
       pipeline_response = gitlab_trigger_pipeline(result)
 
       print(pipeline_response)
@@ -239,7 +238,7 @@ def submit():
 
       return jsonify({"pipeline_id": pipeline_response.get('id'),
                       "pipeline_url": pipeline_response.get('web_url'),
-                      "terraform_content": result
+                      #"terraform_content": result
                       }),200
     except Exception as e:
         app.logger.error(f"{e}")

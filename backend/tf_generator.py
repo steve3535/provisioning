@@ -3,67 +3,49 @@ import yaml
 def generate_terraform_config(yaml_data):
     vm_data = yaml.safe_load(yaml_data)
     
-    terraform_config = ""
+    terraform_lan_config = ""
+    terraform_dmz_config = ""
     
     for vm_name, vm_specs in vm_data.items():
         if vm_specs['domain'] == 'LAN':
-            terraform_config += generate_lan_vm_config(vm_name, vm_specs)
+            terraform_lan_config += generate_lan_vm_config(vm_name, vm_specs)
         else:
-            terraform_config += generate_dmz_vm_config(vm_name, vm_specs)
+            terraform_dmz_config += generate_dmz_vm_config(vm_name, vm_specs)
     
-    return terraform_config
+    return terraform_lan_config,terraform_dmz_config 
 
 def generate_lan_vm_config(vm_name, vm_specs):
     return f"""
-resource "nutanix_virtual_machine" "{vm_name}" {{
-  name                 = "{vm_specs['name']}"
-  cluster_name         = "{vm_specs['cluster']}"
-  num_vcpus_per_socket = {vm_specs['cpu']}
-  num_sockets          = 1
-  memory_size_mib      = {vm_specs['mem']}
+      resource "nutanix_virtual_machine" "{vm_name}" {{
+        name                 = "{vm_specs['name']}"
+        description          = ""
+        cluster_uuid         = data.nutanix_cluster.{vm_specs['datacenter']}_clusters["{vm_specs['cluster'].split('.')[0]}"].metadata.uuid 
+        num_vcpus_per_socket = {vm_specs['cpu']}
+        num_sockets          = 1
+        memory_size_mib      = {vm_specs['mem']}
 
-  disk_list {{
-    data_source_reference = {{
-      kind = "image"
-      name = "{vm_specs['image']}"
-    }}
-  }}
+        disk_list {{
+          data_source_reference = {{
+            kind = "image"
+            uuid = data.nutanix_image.{vm_specs['datacenter']}_images["{vm_specs['image']}"].metadata.uuid
+          }}
+        }}
 
-  disk_list {{
-    disk_size_mib = {int(vm_specs['disk2_size_gb']) * 1024}
-  }}
+        disk_list {{
+          disk_size_mib = {int(vm_specs['disk2_size_gb']) * 1024}
+          storage_config {{
+            storage_container_reference {{
+              kind = "storage_container"
+              uuid = var.{vm_specs['cluster'].split('.')[0]}_storages["{vm_specs['storage']}"]
+            }}
+          }}
+        }}
 
-  nic_list {{
-    subnet_name = "{vm_specs['subnet']}"
-  }}
-
-  guest_customization_cloud_init_user_data = base64encode(<<-EOF
-    #cloud-config
-    hostname: {vm_specs['hostname']}
-    fqdn: {vm_specs['hostname']}.example.com
-    manage_etc_hosts: true
-    users:
-      - name: adminuser
-        sudo: ALL=(ALL) NOPASSWD:ALL
-        groups: users, admin
-        home: /home/adminuser
-        shell: /bin/bash
-        lock_passwd: false
-    ssh_pwauth: true
-    disable_root: false
-    chpasswd:
-      list: |
-        adminuser:password
-      expire: false
-    packages:
-      - qemu-guest-agent
-    runcmd:
-      - systemctl start qemu-guest-agent
-      - systemctl enable qemu-guest-agent
-  EOF
-  )
-}}
-"""
+        nic_list {{
+          subnet_uuid = var.{vm_specs['datacenter']}_subnets["{vm_specs['subnet']}"]
+        }}  
+     }}
+    """
 
 def generate_dmz_vm_config(vm_name, vm_specs):
     return f"""
@@ -114,10 +96,14 @@ resource "vsphere_virtual_machine" "{vm_name}" {{
 # This function would be called after processing the form data
 def create_terraform_file(yaml_data):
     try:
-      terraform_config = generate_terraform_config(yaml_data)
-      with open('main.tf', 'w') as f:
-          f.write(terraform_config)
-      #return "Terraform configuration file created successfully"
-      return terraform_config
+      terraform_lan_config,terraform_dmz_config = generate_terraform_config(yaml_data)
+      with open('../terraform/vms/lan_vms.tf', 'w') as f:
+          f.write(terraform_lan_config)
+      with open('../terraform/vms/dmz_vms.tf', 'w') as f:
+          f.write(terraform_dmz_config)
+    
+
+      return "Terraform configuration files created successfully"
+      
     except Exception as e:
-      return f"An error happened: {e}"
+      return f"An error happened while creating vm definition files: {e}"
