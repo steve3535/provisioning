@@ -97,9 +97,9 @@ resource "vsphere_virtual_machine" "{vm_name}" {{
 def create_terraform_file(yaml_data):
     try:
       terraform_lan_config,terraform_dmz_config = generate_terraform_config(yaml_data)
-      with open('../terraform/vms/lan_vms.tf', 'w') as f:
+      with open('../terraform/lan_vms.tf', 'w') as f:
           f.write(terraform_lan_config)
-      with open('../terraform/vms/dmz_vms.tf', 'w') as f:
+      with open('../terraform/dmz_vms.tf', 'w') as f:
           f.write(terraform_dmz_config)
     
 
