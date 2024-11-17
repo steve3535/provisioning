@@ -1,8 +1,22 @@
-__pycache__
 env
-.env 
 sshconfig
 keys
-terraform.tfvars
 .terraform
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+*.tfvars.json
+crash.log
+
+# IDE
+.vscode/
+.idea/

@@ -106,12 +106,16 @@ def generate_dmz_vm_config(vm_name, vm_specs):
 def create_terraform_file(yaml_data):
     try:
       terraform_lan_config,terraform_dmz_config = generate_terraform_config(yaml_data)
-      with open('../terraform/lan_vms.tf', 'w') as f:
-          f.write(terraform_lan_config)
-      with open('../terraform/dmz_vms.tf', 'w') as f:
-          f.write(terraform_dmz_config)
-    
-      return "Terraform configuration files created successfully"
+      #>>>> return the content rather than writing to a local file because we need to ship this onto gitlab 
+      # with open('../terraform/lan_vms.tf', 'w') as f:
+      #     f.write(terraform_lan_config)
+      # with open('../terraform/dmz_vms.tf', 'w') as f:
+      #     f.write(terraform_dmz_config)
+      if terraform_lan_config:
+        return terraform_lan_config
+      else:
+        return ""
+      #return "Terraform configuration files created successfully"
       
     except Exception as e:
       return f"An error happened while creating vm definition files: {e}"

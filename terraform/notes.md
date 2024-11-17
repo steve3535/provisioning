@@ -5,7 +5,3 @@
     easiest solution was to just put it in a try .. except block   
 * There might be a use case to pick the OS from an additional field, so that we have the user inputs its prefrred OS -- log an issue  
 * nut-dmz-07 - 08 retirés car ils sont plus op - donc retirés de app.py et main.tf   
-
-    
-   
-

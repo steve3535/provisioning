@@ -23,10 +23,24 @@ app = Flask(__name__)
 def gitlab_trigger_pipeline(tf_content):
     url=f"{GITLAB_URL}/api/v4/projects/{GITLAB_PROJECT_ID}/trigger/pipeline"
 
-    data={
+    # Read necessary Terraform files
+    with open('../terraform/main.tf', 'r') as f:
+        main_tf = f.read()
+    with open('../terraform/variables.tf', 'r') as f:
+        vars_tf = f.read()
+    with open('../terraform/lan_subnets.tfvars', 'r') as f:
+        subnets_tfvars = f.read()
+    with open('../terraform/storage_containers.tfvars', 'r') as f:
+        storage_tfvars = f.read()
+
+    data = {
         "token": f"{GITLAB_TOKEN}",        
-        "ref": "main",
-        "variables[TERRAFORM_CONTENT]": tf_content
+        "ref": "v2",
+        "variables[TERRAFORM_CONTENT]": tf_content,
+        "variables[TF_MAIN]": main_tf,
+        "variables[TF_VARS]": vars_tf,
+        "variables[TF_VARS_LAN_SUBNETS]": subnets_tfvars,
+        "variables[TF_VARS_STORAGE]": storage_tfvars
     }
 
     try:
@@ -229,7 +243,6 @@ def storages():
 def submit():
     try:
       yaml_data = process_vm_data(request.form)
-      #result = create_terraform_file(yaml_data)
       result = create_terraform_file(yaml_data)
       return "OK",200
     #   pipeline_response = gitlab_trigger_pipeline(result)
