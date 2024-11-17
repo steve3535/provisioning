@@ -2,6 +2,10 @@ variables:
   TF_VAR_nutanix_username: ${NUTANIX_USERNAME}
   TF_VAR_nutanix_password: ${NUTANIX_PASSWORD}
 
+default:
+  tags:
+    - tf 
+
 stages:
   - prepare
   - plan

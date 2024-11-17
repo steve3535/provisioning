@@ -244,16 +244,15 @@ def submit():
     try:
       yaml_data = process_vm_data(request.form)
       result = create_terraform_file(yaml_data)
-      return "OK",200
-    #   pipeline_response = gitlab_trigger_pipeline(result)
+      #return "OK",200
+      pipeline_response = gitlab_trigger_pipeline(result)
+      print(pipeline_response)
 
-    #   print(pipeline_response)
+      return jsonify({
+            "pipeline_id": pipeline_response.get('id'),
+            "pipeline_url": pipeline_response.get('web_url'),
+        }), 200      
 
-
-    #   return jsonify({"pipeline_id": pipeline_response.get('id'),
-    #                   "pipeline_url": pipeline_response.get('web_url'),
-    #                   #"terraform_content": result
-    #                   }),200
     except Exception as e:
         app.logger.error(f"{e}")
         return jsonify({"FATAL": f"An error occured while processing your request {e}"}),500    
