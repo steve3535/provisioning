@@ -85,3 +85,9 @@ variable "dc1_subnets" {
 variable "dc3_subnets" {
     type = map(string)
 }
+
+variable "vsphere_datacenter" { default = "LALUX" }
+variable "vsphere_cluster" { default = "Cluster NUTANIX DMZ" }
+variable "vsphere_resource_pool" { default = "Cluster NUTANIX DMZ/Resources" }
+variable "vsphere_interface_name" { default = "ens192" }
+variable "vsphere_guest_os" { default = "rhel8_64Guest" }

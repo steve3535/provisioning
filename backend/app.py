@@ -73,8 +73,8 @@ def get_clusters(datacenter):
     clusters = {
         'dc1': ['lu650.lalux.local'],
         'dc3': ['lu651.lalux.local'],
-        'NUT-DMZ-DC01': ['nut-dmz-01','nut-dmz-03','nut-dmz-05','nut-dmz-07','nut-dmz-09'],
-        'NUT-DMZ-DC02': ['nut-dmz-02','nut-dmz-04','nut-dmz-06','nut-dmz-08','nut-dmz-10']
+        'NUT-DMZ-DC01': ['nut-dmz-01','nut-dmz-03','nut-dmz-05','nut-dmz-09'],
+        'NUT-DMZ-DC02': ['nut-dmz-02','nut-dmz-04','nut-dmz-06','nut-dmz-10']
     }
 
     return clusters.get(datacenter,[])
@@ -231,15 +231,16 @@ def submit():
       yaml_data = process_vm_data(request.form)
       #result = create_terraform_file(yaml_data)
       result = create_terraform_file(yaml_data)
-      pipeline_response = gitlab_trigger_pipeline(result)
+      return "OK",200
+    #   pipeline_response = gitlab_trigger_pipeline(result)
 
-      print(pipeline_response)
+    #   print(pipeline_response)
 
 
-      return jsonify({"pipeline_id": pipeline_response.get('id'),
-                      "pipeline_url": pipeline_response.get('web_url'),
-                      #"terraform_content": result
-                      }),200
+    #   return jsonify({"pipeline_id": pipeline_response.get('id'),
+    #                   "pipeline_url": pipeline_response.get('web_url'),
+    #                   #"terraform_content": result
+    #                   }),200
     except Exception as e:
         app.logger.error(f"{e}")
         return jsonify({"FATAL": f"An error occured while processing your request {e}"}),500    

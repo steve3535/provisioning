@@ -26,15 +26,15 @@
   }
   ```
 
-  ## main.tf
+## main.tf
   * this file is the squeleton for everything else  
   * Typically we will have:  
     * the definition of the required providers  
     * the details of the providers (credentials to the providers) - refrenced by variables defined in variables.tf
 
 
-  ## variables.tf
+## variables.tf
 
-  
-  
-  
+## Service Account permissions 
+1. created on Nutanix the service account **ntx-api-sa** on both PEs and PCs  
+2. Had to use the new IAM in PC to grant full VM admin access to the sa account (Select Role and add an Auth. Policy)  
