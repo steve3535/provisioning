@@ -47,14 +47,34 @@ variable "nutanix_clusters" {
     }
 }
 
+# variable "nutanix_images" {
+#     type = map(object({
+#        name: string 
+#        dc: string 
+#     }))
+#     default = {
+#       rhel8-dc1 = {"name":"RHEL8STD-latest","dc":"dc1"} 
+#       rhel8-dc3 = {"name":"RHEL8STD-latest","dc":"dc3"} 
+#     } 
+# }
+
 variable "nutanix_images" {
     type = map(object({
        name: string 
-       dc: string 
+       dc: string
+       uuid: string
     }))
     default = {
-      rhel8-dc1 = {"name":"RHEL8STD-latest","dc":"dc1"} 
-      rhel8-dc3 = {"name":"RHEL8STD-latest","dc":"dc3"} 
+      rhel8-dc1 = {
+        "name": "RHEL8STD-latest",
+        "dc": "dc1",
+        "uuid": "92e2ecfa-fa9c-400d-95b2-ab2e58013ec0"  # We need to get this from Nutanix
+      } 
+      rhel8-dc3 = {
+        "name": "RHEL8STD-latest",
+        "dc": "dc3",
+        "uuid": "71d38949-a126-4038-83f0-82290edd7f50"  # We need to get this from Nutanix
+      } 
     } 
 }
 
