@@ -33,6 +33,7 @@ prepare:
     - echo "$TF_VARS" > terraform/variables.tf
     - echo "$TF_VARS_LAN_SUBNETS" > terraform/lan_subnets.tfvars
     - echo "$TF_VARS_STORAGE" > terraform/storage_containers.tfvars
+    - cat terraform/lan_vms.tf 
     - |
       cat > terraform/terraform.tfvars << EOF
       nutanix_username = "${NUTANIX_USERNAME}"
