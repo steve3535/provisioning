@@ -75,6 +75,7 @@ plan:
 apply:
   stage: apply
   script:
+    - cd terraform 
     - terraform apply -auto-approve tfplan
   when: manual  # Requires manual approval
   dependencies:
