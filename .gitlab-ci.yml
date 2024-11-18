@@ -33,7 +33,6 @@ prepare:
     - echo "$TF_VARS" > terraform/variables.tf
     - echo "$TF_VARS_LAN_SUBNETS" > terraform/lan_subnets.tfvars
     - echo "$TF_VARS_STORAGE" > terraform/storage_containers.tfvars
-    - cat terraform/lan_vms.tf 
     - |
       cat > terraform/terraform.tfvars << EOF
       nutanix_username = "${NUTANIX_USERNAME}"
@@ -44,6 +43,8 @@ plan:
   stage: plan
   script:
     - cd terraform
+    - ls 
+    - cat lan_vms.tf 
     - terraform init --plugin-dir=/opt/infrastructure/terraform-providers
     - terraform plan -var-file="lan_subnets.tfvars" -var-file="storage_containers.tfvars" --out=tfplan
   artifacts:
