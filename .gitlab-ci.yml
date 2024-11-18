@@ -43,7 +43,7 @@ plan:
   script:
     - cd terraform
     - terraform init --plugin-dir=/opt/infrastructure/terraform-providers
-    - terraform plan -var-file="lan_subnets.tfvars" -var-file="storage_containers.tfvars"
+    - terraform plan -var-file="lan_subnets.tfvars" -var-file="storage_containers.tfvars" --out=tfplan
   artifacts:
     paths:
       - terraform/tfplan
@@ -54,3 +54,5 @@ apply:
   script:
     - terraform apply -auto-approve tfplan
   when: manual  # Requires manual approval
+  dependencies:
+    - plan 
