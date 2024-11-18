@@ -22,11 +22,6 @@ prepare:
     # Create directory structure first
     - mkdir -p terraform/vms
     - mkdir -p terraform/tfvars
-    # set symlink for providers
-    - ln -s /opt/infrastructure/terraform-providers terraform/.terraform
-    # versions needed
-    - cp /opt/infrastructure/linux/provisioning/terraform/.terraform.lock.hcl terraform/
-
     # Create necessary Terraform files from pipeline variables
     - echo "$TERRAFORM_CONTENT" > terraform/lan_vms.tf
     - echo "$TF_MAIN" > terraform/main.tf
@@ -38,6 +33,10 @@ prepare:
       nutanix_username = "${NUTANIX_USERNAME}"
       nutanix_password = "${NUTANIX_PASSWORD}"
       EOF    
+   # Copy instead of symlink
+    - mkdir -p terraform/.terraform
+    - cp -r /opt/infrastructure/terraform-providers/* terraform/.terraform/
+    - cp /opt/infrastructure/linux/provisioning/terraform/.terraform.lock.hcl terraform/      
   artifacts:
     paths:
       - terraform/ 
@@ -51,7 +50,7 @@ plan:
     - cd terraform
     - ls -la
     - cat lan_vms.tf 
-    - terraform init --plugin-dir=/opt/infrastructure/terraform-providers
+    - terraform init
     - terraform plan -var-file="lan_subnets.tfvars" -var-file="storage_containers.tfvars" --out=tfplan
   artifacts:
     paths:
