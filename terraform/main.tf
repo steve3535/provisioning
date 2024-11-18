@@ -3,9 +3,9 @@ terraform {
     nutanix = {
         source = "nutanix/nutanix"
         }
-    vsphere = {
-        source = "hashicorp/vsphere"
-        }
+    # vsphere = {
+    #     source = "hashicorp/vsphere"
+    #     }
   }
 }
 
