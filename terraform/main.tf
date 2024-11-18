@@ -55,12 +55,12 @@ data "nutanix_cluster" "dc3_clusters" {
   provider = nutanix.dc3
 }
 
-data "nutanix_image" "dc1_images" {
-    for_each = local.dc1_images 
-    image_id = each.value.uuid
-    image_name = each.value.name
-    provider = nutanix.dc1
-}
+# data "nutanix_image" "dc1_images" {
+#     for_each = local.dc1_images 
+#     image_id = each.value.uuid
+#     image_name = each.value.name
+#     provider = nutanix.dc1
+# }
 
 data "nutanix_image" "dc3_images" {
     for_each = local.dc3_images 
