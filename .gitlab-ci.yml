@@ -14,21 +14,25 @@ stages:
 prepare:
   stage: prepare
   script:
+    # Create directory structure first
+    - mkdir -p terraform/vms
+    - mkdir -p terraform/tfvars
     # Create necessary Terraform files from pipeline variables
-    - echo "$TERRAFORM_CONTENT" > vms/lan_vms.tf
-    - echo "$TF_MAIN" > main.tf
-    - echo "$TF_VARS" > variables.tf
-    - echo "$TF_VARS_LAN_SUBNETS" > lan_subnets.tfvars
-    - echo "$TF_VARS_STORAGE" > storage_containers.tfvars
+    - echo "$TERRAFORM_CONTENT" > terraform/vms/lan_vms.tf
+    - echo "$TF_MAIN" > terraform/main.tf
+    - echo "$TF_VARS" > terraform/variables.tf
+    - echo "$TF_VARS_LAN_SUBNETS" > terraform/lan_subnets.tfvars
+    - echo "$TF_VARS_STORAGE" > terraform/storage_containers.tfvars
 
 plan:
   stage: plan
   script:
+    - cd terraform
     - terraform init
     - terraform plan -var-file="lan_subnets.tfvars" -var-file="storage_containers.tfvars"
   artifacts:
     paths:
-      - tfplan
+      - terraform/tfplan
     expire_in: 1 week
 
 apply:
