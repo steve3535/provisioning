@@ -243,7 +243,9 @@ def storages():
 def submit():
     try:
       yaml_data = process_vm_data(request.form)
+      print("YAML Data:", yaml_data)  # Debug print      
       result = create_terraform_file(yaml_data)
+      print("Terraform Config:", result)  # Debug print      
       #return "OK",200
       pipeline_response = gitlab_trigger_pipeline(result)
       print(pipeline_response)

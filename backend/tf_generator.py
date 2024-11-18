@@ -106,6 +106,9 @@ def generate_dmz_vm_config(vm_name, vm_specs):
 def create_terraform_file(yaml_data):
     try:
       terraform_lan_config,terraform_dmz_config = generate_terraform_config(yaml_data)
+      # Debug output
+      print("Generated Terraform config:")
+      print(terraform_lan_config)
       #>>>> return the content rather than writing to a local file because we need to ship this onto gitlab 
       # with open('../terraform/lan_vms.tf', 'w') as f:
       #     f.write(terraform_lan_config)
