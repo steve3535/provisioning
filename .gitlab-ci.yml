@@ -2,6 +2,9 @@ variables:
   TF_VAR_nutanix_username: ${NUTANIX_USERNAME}
   TF_VAR_nutanix_password: ${NUTANIX_PASSWORD}
   TF_PLUGIN_CACHE_DIR: "/opt/infrastructure/terraform-providers"
+  # Skip provider verification
+  TF_SKIP_PROVIDER_VERIFICATION: "1"
+
 
 default:
   tags:
@@ -34,7 +37,7 @@ plan:
   stage: plan
   script:
     - cd terraform
-    - terraform init
+    - terraform init --plugin-dir=/opt/infrastructure/terraform-providers
     - terraform plan -var-file="lan_subnets.tfvars" -var-file="storage_containers.tfvars"
   artifacts:
     paths:
