@@ -64,7 +64,7 @@ data "nutanix_cluster" "dc3_clusters" {
 
 data "nutanix_image" "dc3_images" {
     for_each = local.dc3_images 
-    image_id = each.value.uuid
+    #image_id = each.value.uuid
     image_name = each.value.name
     provider = nutanix.dc3
 }
