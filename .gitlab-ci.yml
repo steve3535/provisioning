@@ -1,6 +1,7 @@
 variables:
   TF_VAR_nutanix_username: ${NUTANIX_USERNAME}
   TF_VAR_nutanix_password: ${NUTANIX_PASSWORD}
+  TF_PLUGIN_CACHE_DIR: "/opt/infrastructure/terraform-providers"
 
 default:
   tags:
@@ -17,6 +18,11 @@ prepare:
     # Create directory structure first
     - mkdir -p terraform/vms
     - mkdir -p terraform/tfvars
+    # set symlink for providers
+    - ln -s /opt/infrastructure/terraform-providers terraform/.terraform
+    # versions needed
+    - cp /opt/infrastructure/linux/provisioning/terraform/.terraform.lock.hcl terraform/
+
     # Create necessary Terraform files from pipeline variables
     - echo "$TERRAFORM_CONTENT" > terraform/vms/lan_vms.tf
     - echo "$TF_MAIN" > terraform/main.tf
