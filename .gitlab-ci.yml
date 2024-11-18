@@ -38,17 +38,24 @@ prepare:
       nutanix_username = "${NUTANIX_USERNAME}"
       nutanix_password = "${NUTANIX_PASSWORD}"
       EOF    
+  artifacts:
+    paths:
+      - terraform/ 
+    expire_in: 1 hour
 
 plan:
   stage: plan
+  dependencies:
+    - prepare 
   script:
     - cd terraform
-    - ls 
+    - ls -la
     - cat lan_vms.tf 
     - terraform init --plugin-dir=/opt/infrastructure/terraform-providers
     - terraform plan -var-file="lan_subnets.tfvars" -var-file="storage_containers.tfvars" --out=tfplan
   artifacts:
     paths:
+      - terraform/
       - terraform/tfplan
     expire_in: 1 week
 
