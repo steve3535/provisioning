@@ -10,23 +10,23 @@ variable "nutanix_password" {
     sensitive = true  
 }
 
-variable "vsphere_username" {
-    description = "VSPHERE ADMIN USERNAME"
-    type = string
-    sensitive = true 
-}
+# variable "vsphere_username" {
+#     description = "VSPHERE ADMIN USERNAME"
+#     type = string
+#     sensitive = true 
+# }
 
-variable "vsphere_password" {
-    description = "VSPHERE ADMIN PASSWORD"
-    type = string
-    sensitive = true 
-}
+# variable "vsphere_password" {
+#     description = "VSPHERE ADMIN PASSWORD"
+#     type = string
+#     sensitive = true 
+# }
 
-variable "vsphere_server" {
-    description = "VSPHERE SERVER"
-    type = string
-    default = "lu309.lalux.local"
-}
+# variable "vsphere_server" {
+#     description = "VSPHERE SERVER"
+#     type = string
+#     default = "lu309.lalux.local"
+# }
 
 variable "nutanix_endpoints" {
     type = map(string)
