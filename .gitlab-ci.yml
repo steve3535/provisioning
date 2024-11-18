@@ -30,7 +30,7 @@ prepare:
     # Create necessary Terraform files from pipeline variables
     - echo "$TERRAFORM_CONTENT" > terraform/vms/lan_vms.tf
     - echo "$TF_MAIN" > terraform/main.tf
-    - cat terraform/main.tf
+    - cat terraform/vms/lan_vms.tf
     - echo "$TF_VARS" > terraform/variables.tf
     - echo "$TF_VARS_LAN_SUBNETS" > terraform/lan_subnets.tfvars
     - echo "$TF_VARS_STORAGE" > terraform/storage_containers.tfvars
