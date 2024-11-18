@@ -50,7 +50,7 @@ plan:
     - cd terraform
     - ls -la
     - cat lan_vms.tf 
-    - terraform init
+    - terraform init --get-plugins=false 
     - terraform plan -var-file="lan_subnets.tfvars" -var-file="storage_containers.tfvars" --out=tfplan
   artifacts:
     paths:
