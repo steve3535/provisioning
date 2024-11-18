@@ -24,12 +24,21 @@ def generate_lan_vm_config(vm_name, vm_specs):
         num_vcpus_per_socket = {vm_specs['cpu']}
         num_sockets          = 1
         memory_size_mib      = {vm_specs['mem']}
+        boot_type            = "UEFI"
 
         disk_list {{
           data_source_reference = {{
             kind = "image"
             uuid = data.nutanix_image.{vm_specs['datacenter']}_images["{vm_specs['image']}"].metadata.uuid
           }}
+          device_properties {{
+            disk_address = {{
+              device_index = 0
+              adapter_type = "SCSI"
+            }}
+            device_type = "DISK"
+          }}
+
         }}
 
         disk_list {{
