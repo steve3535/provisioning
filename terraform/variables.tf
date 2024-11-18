@@ -47,17 +47,6 @@ variable "nutanix_clusters" {
     }
 }
 
-# variable "nutanix_images" {
-#     type = map(object({
-#        name: string 
-#        dc: string 
-#     }))
-#     default = {
-#       rhel8-dc1 = {"name":"RHEL8STD-latest","dc":"dc1"} 
-#       rhel8-dc3 = {"name":"RHEL8STD-latest","dc":"dc3"} 
-#     } 
-# }
-
 variable "nutanix_images" {
     type = map(object({
        name: string 
