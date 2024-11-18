@@ -4,6 +4,7 @@ variables:
   TF_PLUGIN_CACHE_DIR: "/opt/infrastructure/terraform-providers"
   # Skip provider verification
   TF_SKIP_PROVIDER_VERIFICATION: "1"
+  TF_CLI_CONFIG_FILE: "$CI_PROJECT_DIR/terraform/.terraformrc"  
 
 
 default:
@@ -35,8 +36,21 @@ prepare:
       EOF    
    # Copy instead of symlink
     - mkdir -p terraform/.terraform
-    - cp -r /opt/infrastructure/terraform-providers/* terraform/.terraform/
+    - cp -pr /opt/infrastructure/terraform-providers/* terraform/.terraform/
     - cp /opt/infrastructure/linux/provisioning/terraform/.terraform.lock.hcl terraform/      
+
+  # Create .terraformrc for offline mode
+    - |
+      cat > terraform/.terraformrc << EOF
+      provider_installation {
+        filesystem_mirror {
+          path = "/opt/infrastructure/terraform-providers"
+        }
+        direct {
+          exclude = ["registry.terraform.io/*/*"]
+        }
+      }   
+       
   artifacts:
     paths:
       - terraform/ 
@@ -50,7 +64,7 @@ plan:
     - cd terraform
     - ls -la
     - cat lan_vms.tf 
-    - terraform init --get-plugins=false 
+    - terraform init
     - terraform plan -var-file="lan_subnets.tfvars" -var-file="storage_containers.tfvars" --out=tfplan
   artifacts:
     paths:
