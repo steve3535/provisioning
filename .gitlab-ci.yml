@@ -6,7 +6,6 @@ variables:
   TF_SKIP_PROVIDER_VERIFICATION: "1"
   TF_CLI_CONFIG_FILE: "$CI_PROJECT_DIR/terraform/.terraformrc"  
 
-
 default:
   tags:
     - tf 
@@ -37,20 +36,20 @@ prepare:
    # Copy instead of symlink
     - mkdir -p terraform/.terraform
     - cp -pr /opt/infrastructure/terraform-providers/* terraform/.terraform/
-    - cp /opt/infrastructure/linux/provisioning/terraform/.terraform.lock.hcl terraform/      
-
+    - cp /opt/infrastructure/linux/provisioning/terraform/.terraform.lock.hcl terraform/ 
+    
    # Create user-data yaml 
-    - |
-      cat <<EOF > terraform/user-data.yaml
-      #cloud-config
-      hostname: ${vm_name}
-      fqdn: ${vm_name}.${vm_domain}
+    # - |
+    #   cat <<EOF > terraform/user-data.yaml
+    #   #cloud-config
+    #   hostname: ${vm_hostname}
+    #   fqdn: ${vm_hostname}
 
-      bootcmd:
-      - nmcli con mod "Wired connection 1" connection.id ens3
-      - nmcli con mod ens3 ipv4.method manual ipv4.addresses ${vm_ip}/${vm_prefix} ipv4.gateway ${vm_gateway} ipv4.dns "${vm_dns1} ${vm_dns2}"
-      - nmcli con up ens3
-      EOF 
+    #   bootcmd:
+    #   - nmcli con mod "System ens3" connection.id ens3
+    #   - nmcli con mod ens3 ipv4.method manual ipv4.addresses ${vm_ip}/${vm_prefix} ipv4.gateway ${vm_gateway} ipv4.dns "${vm_dns1} ${vm_dns2}"
+    #   - nmcli con up ens3
+    #   EOF 
 
    # Create .terraformrc for offline mode
     - |

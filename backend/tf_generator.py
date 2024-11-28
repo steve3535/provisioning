@@ -52,8 +52,7 @@ def generate_lan_vm_config(vm_name, vm_specs):
         }}
 
         guest_customization_cloud_init_user_data = base64encode(templatefile("user-data.yaml", {{
-          vm_domain         =  "lalux.local"
-          vm_name       =  "{vm_specs['name']}"
+          vm_hostname       =  "{vm_specs['hostname']}"
           vm_ip   = "{vm_specs['ip']}"
           vm_prefix = "24"
           vm_gateway   =  "{vm_specs['gateway']}"
