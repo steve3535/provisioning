@@ -38,7 +38,7 @@ prepare:
     - mkdir -p terraform/.terraform
     - cp -pr /opt/infrastructure/terraform-providers/* terraform/.terraform/
     - cp /opt/infrastructure/linux/provisioning/terraform/.terraform.lock.hcl terraform/ 
-    - cp user-data.yaml terraform/ 
+    # - cp user-data.yaml terraform/ 
     
    # Create user-data yaml 
     # - |
