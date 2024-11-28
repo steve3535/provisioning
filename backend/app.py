@@ -20,7 +20,7 @@ GITLAB_PROJECT_ID = os.environ.get('GITLAB_PROJECT_ID')
 
 app = Flask(__name__)
 
-def gitlab_trigger_pipeline(tf_content):
+def gitlab_trigger_pipeline(tf_content,user_data):
     url=f"{GITLAB_URL}/api/v4/projects/{GITLAB_PROJECT_ID}/trigger/pipeline"
 
     # Read necessary Terraform files
@@ -37,6 +37,7 @@ def gitlab_trigger_pipeline(tf_content):
         "token": f"{GITLAB_TOKEN}",        
         "ref": "v2",
         "variables[TERRAFORM_CONTENT]": tf_content,
+        "variables[USER_DATA]": user_data,
         "variables[TF_MAIN]": main_tf,
         "variables[TF_VARS]": vars_tf,
         "variables[TF_VARS_LAN_SUBNETS]": subnets_tfvars,
@@ -246,8 +247,20 @@ def submit():
       print("YAML Data:", yaml_data)  # Debug print      
       result = create_terraform_file(yaml_data)
       print("Terraform Config:", result)  # Debug print      
+
+      # Create user-data content
+      user_data = f"""
+      #cloud-config
+      hostname: {request.form['hostname']}
+      fqdn: {request.form['hostname']}
+      bootcmd:
+        - nmcli con mod "System ens3" connection.id ens3
+        - nmcli con mod ens3 ipv4.method manual ipv4.addresses {request.form['ip']}/{request.form.get('prefix', '24')} ipv4.gateway {request.form['gateway']} ipv4.dns "{request.form.get('dns1', '')} {request.form.get('dns2', '')}"
+        - nmcli con up ens3
+      """
+
       #return "OK",200
-      pipeline_response = gitlab_trigger_pipeline(result)
+      pipeline_response = gitlab_trigger_pipeline(result,user_data)
       print(pipeline_response)
 
       return jsonify({
