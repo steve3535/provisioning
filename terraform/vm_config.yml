@@ -1,0 +1,136 @@
+---
+- hosts: all
+  gather_facts: no
+  become: true
+  pre_tasks:
+    - name: Wait for system to be ready
+      pause:
+        minutes: 1
+      
+    - name: Download Satellite CA
+      command: rpm -ivh http://lu712.lalux.local/pub/katello-ca-consumer-latest.noarch.rpm
+      
+  tasks:
+    - name: Register with Satellite
+      community.general.redhat_subscription:
+        server_hostname: lu712.lalux.local
+        server_insecure: yes
+        state: present
+        activationkey: "{{ env }}_standard1"
+        org_id: "LALUX"
+        force_register: yes
+
+    - name: Install required packages
+      yum:
+        name:
+          - zip
+          - htop
+        state: present
+
+    - name: Run system updates
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Configure second disk
+      block:
+        - name: Create volume group
+          lvg:
+            vg: app_vg
+            pvs: /dev/sdb
+
+        - name: Create logical volume
+          lvol:
+            vg: app_vg
+            lv: opt
+            size: 90%FREE
+
+        - name: Create filesystem
+          filesystem:
+            fstype: xfs
+            dev: /dev/mapper/app_vg-opt
+
+        - name: Mount filesystem
+          mount:
+            path: /opt
+            src: /dev/mapper/app_vg-opt
+            fstype: xfs
+            state: mounted
+
+    - name: Configure IDM client
+      block:
+        - name: Install IDM client
+          include_role:
+            name: ipaclient
+          vars:
+            ipaadmin_principal: admin
+            ipaadmin_password: "{{ idm_admin_password }}"
+            ipaclient_domain: linux.lalux.local
+            ipaclient_hostname: "{{ inventory_hostname }}.lalux.local"
+            ipaclient_mkhomedir: yes
+            ipaservers: vsl-pro-idm-001.linux.lalux.local
+            ipaclient_force: yes
+            state: present
+
+        - name: Configure shell settings
+          lineinfile:
+            line: "{{ item }}"
+            path: /etc/sssd/sssd.conf
+            insertbefore: 'sssd'
+            state: present
+          loop:
+            - "default_shell = /bin/bash"
+            - "override_shell = /bin/bash"
+
+        - name: Restart SSSD
+          service:
+            name: sssd
+            state: restarted
+
+    - name: Setup monitoring
+      block:
+        - name: Extract node_exporter
+          unarchive:
+            src: /opt/infrastructure/linux/files/node_exporter-1.3.1.linux-amd64.tar.gz
+            dest: /opt/
+
+        - name: Install node_exporter binary
+          copy:
+            src: /opt/node_exporter-1.3.1.linux-amd64/node_exporter
+            dest: /usr/local/bin/
+            remote_src: yes
+            mode: 0755
+
+        - name: Configure node_exporter service
+          copy:
+            src: /opt/infrastructure/linux/files/node-exporter.service
+            dest: /etc/systemd/system/
+          notify: reload_systemd
+
+        - name: Configure firewall
+          firewalld:
+            port: 9100/tcp
+            permanent: true
+            immediate: yes
+            state: enabled
+          ignore_errors: true
+
+    - name: Register with Insights
+      command: insights-client --register
+
+    - name: Remove cloud-user
+      user:
+        name: cloud-user
+        state: absent
+        remove: yes
+
+  handlers:
+    - name: reload_systemd
+      systemd:
+        name: node-exporter.service
+        daemon_reload: yes
+        state: restarted
+        enabled: yes
+
+  environment:
+    no_proxy: lu711.lalux.local,lu712.lalux.local,172.22.56.11,172.22.56.10,lu714.linux.lalux.local,192.168.42.93,vsl-pro-idm-001.linux.lalux.local,192.168.25.28

@@ -5,6 +5,7 @@ variables:
   # Skip provider verification
   TF_SKIP_PROVIDER_VERIFICATION: "1"
   TF_CLI_CONFIG_FILE: "$CI_PROJECT_DIR/terraform/.terraformrc"  
+  IDM_ADMIN_PASSWORD: L@l1xIDM#2024
 
 default:
   tags:
