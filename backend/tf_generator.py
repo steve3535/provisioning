@@ -1,3 +1,19 @@
+import yaml                                                                       
+                                                                                  
+def generate_terraform_config(yaml_data):                                         
+    vm_data = yaml.safe_load(yaml_data)                                           
+                                                                                  
+    terraform_lan_config = ""                                                     
+    terraform_dmz_config = ""                                                     
+                                                                                  
+    for vm_name, vm_specs in vm_data.items():                                     
+        if vm_specs['domain'] == 'LAN':                                           
+            terraform_lan_config += generate_lan_vm_config(vm_name, vm_specs)     
+        else:                                                                     
+            terraform_dmz_config += generate_dmz_vm_config(vm_name, vm_specs)     
+                                                                                  
+    return terraform_lan_config,terraform_dmz_config                              
+
 def generate_lan_vm_config(vm_name, vm_specs):
     return f"""
       # Read the SSH public key
@@ -54,3 +70,19 @@ def generate_lan_vm_config(vm_name, vm_specs):
         }}
       }}
     """
+
+# This function would be called after processing the form data
+def create_terraform_file(yaml_data):
+    try:
+      terraform_lan_config,terraform_dmz_config = generate_terraform_config(yaml_data)
+      # Debug output
+      print("Generated Terraform config:")
+      print(terraform_lan_config)
+      if terraform_lan_config:
+        return terraform_lan_config
+      else:
+        return ""
+      #return "Terraform configuration files created successfully"
+      
+    except Exception as e:
+      return f"An error happened while creating vm definition files: {e}"    
