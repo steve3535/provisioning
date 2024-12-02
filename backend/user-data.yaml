@@ -2,7 +2,17 @@
 hostname: ${vm_hostname}
 fqdn: ${vm_hostname}
 
+# Password configuration
+chpasswd:
+  list: |
+    localadmin:L@lux0123456789#
+  expire: false
+
+# SSH key configuration
+ssh_authorized_keys:
+  - ${ssh_pub_key}
+
 bootcmd:
   - nmcli con mod "System ens3" connection.id ens3
   - nmcli con mod ens3 ipv4.method manual ipv4.addresses ${vm_ip}/${vm_prefix} ipv4.gateway ${vm_gateway} ipv4.dns "${vm_dns1} ${vm_dns2}"
-  - nmcli con up ens3
+  - nmcli con up ens3  
