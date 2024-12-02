@@ -17,6 +17,7 @@ load_dotenv()
 GITLAB_URL = os.environ.get('GITLAB_URL')
 GITLAB_TOKEN = os.environ.get('GITLAB_TOKEN')
 GITLAB_PROJECT_ID = os.environ.get('GITLAB_PROJECT_ID')
+SSH_PUB_KEY = os.environ['LOCALADMIN_SSH_PUB_KEY']
 
 app = Flask(__name__)
 
@@ -254,7 +255,7 @@ def submit():
       # Create user-data content
       user_data = f"""
       #cloud-config
-      hostname: {request.form['hostname']}
+      hostname: "mamamilla"
       fqdn: {request.form['hostname']}
       #Password configuration
       chpasswd:
@@ -266,7 +267,7 @@ def submit():
       users:
       - name: localadmin
         ssh_authorized_keys:
-          - ${ssh_pub_key}      
+          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGRDbtrK0KbhYmwgCzVHRoGXKjMIyNht6IJcPbHG/b+e gitlab-runner@rh-subman.lalux.local"      
         bootcmd:
           - nmcli con mod "System ens3" connection.id ens3
           - nmcli con mod ens3 ipv4.method manual ipv4.addresses {request.form['ip']}/{request.form.get('prefix', '24')} ipv4.gateway {request.form['gateway']} ipv4.dns "{request.form.get('dns1', '')} {request.form.get('dns2', '')}"

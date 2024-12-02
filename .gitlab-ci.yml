@@ -40,20 +40,8 @@ prepare:
     - cp -pr /opt/infrastructure/terraform-providers/* terraform/.terraform/
     - cp /opt/infrastructure/linux/provisioning/terraform/.terraform.lock.hcl terraform/ 
     - cp /opt/infrastructure/linux/provisioning/keys/localadmin.pub terraform/keys/ || echo "Copy failed"
-    # - cp user-data.yaml terraform/ 
+    - cat terraform/user-data.yaml
     
-   # Create user-data yaml 
-    # - |
-    #   cat <<EOF > terraform/user-data.yaml
-    #   #cloud-config
-    #   hostname: ${vm_hostname}
-    #   fqdn: ${vm_hostname}
-
-    #   bootcmd:
-    #   - nmcli con mod "System ens3" connection.id ens3
-    #   - nmcli con mod ens3 ipv4.method manual ipv4.addresses ${vm_ip}/${vm_prefix} ipv4.gateway ${vm_gateway} ipv4.dns "${vm_dns1} ${vm_dns2}"
-    #   - nmcli con up ens3
-    #   EOF 
 
    # Create .terraformrc for offline mode
     - |
