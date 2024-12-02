@@ -48,7 +48,16 @@
   ```  
   If not present, as gitlab-runner, install it:  
   ```bash
-  export https_proxy=
-  export http_proxy=
+  export https_proxy=xxx
+  export http_proxy=xxx
+  cat <<EOF >.ansible.cfg
+  [galaxy]
+  server_list = galaxy
+
+  [galaxy_server.galaxy]
+  url = https://galaxy.ansible.com
+  proxy = http://vsl-pro-squ-001:3128
   ansible-galaxy collection install community.general 
+  EOF
   ```  
+* the mount module used in the playbook leverages the collection **ansible.posix**
