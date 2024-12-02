@@ -1,21 +1,10 @@
-import yaml
-
-def generate_terraform_config(yaml_data):
-    vm_data = yaml.safe_load(yaml_data)
-    
-    terraform_lan_config = ""
-    terraform_dmz_config = ""
-    
-    for vm_name, vm_specs in vm_data.items():
-        if vm_specs['domain'] == 'LAN':
-            terraform_lan_config += generate_lan_vm_config(vm_name, vm_specs)
-        else:
-            terraform_dmz_config += generate_dmz_vm_config(vm_name, vm_specs)
-    
-    return terraform_lan_config,terraform_dmz_config 
-
 def generate_lan_vm_config(vm_name, vm_specs):
     return f"""
+      # Read the SSH public key
+      data "local_file" "ssh_public_key" {{
+        filename = "../keys/mykey.pub"
+      }}
+
       resource "nutanix_virtual_machine" "{vm_name}" {{
         name                 = "{vm_specs['name']}"
         description          = ""
@@ -38,7 +27,6 @@ def generate_lan_vm_config(vm_name, vm_specs):
             }}
             device_type = "DISK"
           }}
-
         }}
 
         disk_list {{
@@ -52,93 +40,17 @@ def generate_lan_vm_config(vm_name, vm_specs):
         }}
 
         guest_customization_cloud_init_user_data = base64encode(templatefile("user-data.yaml", {{
-          vm_hostname       =  "{vm_specs['hostname']}"
-          vm_ip   = "{vm_specs['ip']}"
-          vm_prefix = "24"
-          vm_gateway   =  "{vm_specs['gateway']}"
-          vm_dns1    = "200.1.1.218"
-          vm_dns2    = "200.1.1.163"
+          vm_hostname = "{vm_specs['hostname']}",
+          vm_ip = "{vm_specs['ip']}",
+          vm_prefix = "24",
+          vm_gateway = "{vm_specs['gateway']}",
+          vm_dns1 = "200.1.1.218",
+          vm_dns2 = "200.1.1.163",
+          ssh_pub_key = data.local_file.ssh_public_key.content
         }}))
-
-
 
         nic_list {{
           subnet_uuid = var.{vm_specs['datacenter']}_subnets["{vm_specs['subnet']}"]
-        }}  
-     }}
-    """
-
-def generate_dmz_vm_config(vm_name, vm_specs):
-  try:
-    return f"""
-      resource "vsphere_virtual_machine" "{vm_name}" {{  
-        name             = "{vm_specs['name']}"
-        resource_pool_id = data.vsphere_resource_pool.esx_pool.id 
-        host_system_id   = data.vsphere_host.{vm_specs['cluster']}.id
-        datastore_id     = data.vsphere_datastore.{vm_specs['storage']}.id
-        firmware         = "efi"
-        num_cpus         = {vm_specs['cpu']}
-        memory           = {vm_specs['mem']}
-        guest_id         = "rhel8_64Guest"
-        folder           = "/DMZ"
-        wait_for_guest_net_timeout = 10
-
-        network_interface {{
-          network_id = data.vsphere_network.{vm_specs['subnet']}.id
-        }}
-      
-        disk {{
-          label = "disk0"
-          size  = 50
-          controller_type = "scsi"
-        }}
-      
-        disk {{
-          label = "disk1"
-          size  = {vm_specs['disk2_size_gb']}
-          controller_type = "scsi"
-          unit_number = 1
-        }}
-      
-        clone {{
-          template_uuid = data.vsphere_content_library_item.{vm_specs['image']}.id
-      
-          customize {{
-            linux_options {{
-              host_name = "{vm_specs['name']}"
-              domain    = "lalux.local"
-            }}
-      
-            network_interface {{
-              ipv4_address = "{vm_specs['ip']}"
-              ipv4_netmask = 24
-            }}
-      
-            ipv4_gateway = "{vm_specs['gateway']}"
-          }}
         }}
       }}
     """
-  except Exception as e:
-    print(f"An error occured while generating DMZ VM tf config: {e}")
-
-# This function would be called after processing the form data
-def create_terraform_file(yaml_data):
-    try:
-      terraform_lan_config,terraform_dmz_config = generate_terraform_config(yaml_data)
-      # Debug output
-      print("Generated Terraform config:")
-      print(terraform_lan_config)
-      #>>>> return the content rather than writing to a local file because we need to ship this onto gitlab 
-      # with open('../terraform/lan_vms.tf', 'w') as f:
-      #     f.write(terraform_lan_config)
-      # with open('../terraform/dmz_vms.tf', 'w') as f:
-      #     f.write(terraform_dmz_config)
-      if terraform_lan_config:
-        return terraform_lan_config
-      else:
-        return ""
-      #return "Terraform configuration files created successfully"
-      
-    except Exception as e:
-      return f"An error happened while creating vm definition files: {e}"
