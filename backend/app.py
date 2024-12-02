@@ -255,7 +255,7 @@ def submit():
       # Create user-data content
       user_data = f"""
       #cloud-config
-      hostname: "mamamilla"
+      hostname: {request.form['hostname']}
       fqdn: {request.form['hostname']}
       #Password configuration
       chpasswd:
@@ -268,10 +268,10 @@ def submit():
       - name: localadmin
         ssh_authorized_keys:
           - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGRDbtrK0KbhYmwgCzVHRoGXKjMIyNht6IJcPbHG/b+e gitlab-runner@rh-subman.lalux.local"      
-        bootcmd:
-          - nmcli con mod "System ens3" connection.id ens3
-          - nmcli con mod ens3 ipv4.method manual ipv4.addresses {request.form['ip']}/{request.form.get('prefix', '24')} ipv4.gateway {request.form['gateway']} ipv4.dns "{request.form.get('dns1', '')} {request.form.get('dns2', '')}"
-          - nmcli con up ens3
+      bootcmd:
+        - nmcli con mod "System ens3" connection.id ens3
+        - nmcli con mod ens3 ipv4.method manual ipv4.addresses {request.form['ip']}/{request.form.get('prefix', '24')} ipv4.gateway {request.form['gateway']} ipv4.dns "200.1.1.163" +ipv4.dns "200.1.1.218"
+        - nmcli con up ens3
       """
 
       #return "OK",200
