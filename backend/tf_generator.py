@@ -1,5 +1,5 @@
 import yaml   
-                                                                                  
+IDM_ADMIN_PASSWORD = "L@l1xIDM#2024"                    
 def generate_terraform_config(yaml_data):                                         
     vm_data = yaml.safe_load(yaml_data)                                           
                                                                                   
@@ -64,9 +64,9 @@ def generate_lan_vm_config(vm_name, vm_specs):
           subnet_uuid = var.{vm_specs['datacenter']}_subnets["{vm_specs['subnet']}"]
         }}
       
-        provisioner "local-exec" {
+        provisioner "local-exec" {{
           command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '{vm_specs['hostname']},' -e env={vm_specs['environment']} -e idm_admin_password=${IDM_ADMIN_PASSWORD}  vm_config.yml -u localadmin -b"
-        }
+        }}
      }}      
     """
 

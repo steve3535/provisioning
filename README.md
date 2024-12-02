@@ -38,3 +38,17 @@
 ## Service Account permissions 
 1. created on Nutanix the service account **ntx-api-sa** on both PEs and PCs  
 2. Had to use the new IAM in PC to grant full VM admin access to the sa account (Select Role and add an Auth. Policy)  
+
+## Ansible
+* the gitlab-runner should also be the Ansible controller, hence ansible binaries should be available for gitlab-runner user
+* the satellite enrollment relies on community.general collection: hence, ensure its installed and available under gitlab-runner user:
+  ```bash
+  sudo su - gitlab-runner
+  https_proxy=http://vsl-pro-squ-001:3128 ansible-galaxy collection list
+  ```  
+  If not present, as gitlab-runner, install it:  
+  ```bash
+  export https_proxy=
+  export http_proxy=
+  ansible-galaxy collection install community.general 
+  ```  
