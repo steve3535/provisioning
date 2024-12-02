@@ -28,7 +28,6 @@
                     $('#cluster').html(options).prop('disabled', false);
                 });
 
-                
                 $.getJSON('/get_images', {datacenter: datacenter}, function(data) {
                     var options = '<option value="">Select Image</option>';
                     $.each(data, function(key, val) {
@@ -44,7 +43,6 @@
                     });
                     $('#subnet').html(options).prop('disabled', false);
                 });
-
             });
 
             $('#cluster').change(function() {
@@ -57,8 +55,6 @@
                     $('#storage').html(options).prop('disabled', false);
                 });
             });            
-
-
         });
     </script>
 </head>
@@ -70,6 +66,15 @@
             <option value="">Select Domain</option>
             {% for domain in domains %}
             <option value="{{ domain }}">{{ domain }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <!-- New Environment field -->
+        <label for="environment">Environment:</label>
+        <select id="environment" name="environment" required>
+            <option value="">Select Environment</option>
+            {% for env in environments %}
+            <option value="{{ env }}">{{ env }}</option>
             {% endfor %}
         </select><br><br>
 
