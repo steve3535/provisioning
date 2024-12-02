@@ -18,7 +18,7 @@ def generate_lan_vm_config(vm_name, vm_specs):
     return f"""
       # Read the SSH public key
       data "local_file" "ssh_public_key" {{
-        filename = "../keys/localadmin.pub"
+        filename = "keys/localadmin.pub"
       }}
 
       resource "nutanix_virtual_machine" "{vm_name}" {{
