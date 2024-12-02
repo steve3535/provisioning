@@ -63,6 +63,9 @@ def basic_auth():
 def get_domains():
     return ['LAN','DMZ']
 
+def get_environment():
+    return ['DEV_TEST', 'RECETTE_PREPROD', 'PROD']
+
 def get_datacenters(domain):
     if domain == "LAN":
         return ['dc1','dc3']
@@ -205,7 +208,7 @@ def get_esx_datastores():
 
 @app.route('/')
 def index():
-    return render_template('index.html',domains=get_domains())
+    return render_template('index.html',domains=get_domains(),environments=get_environment())
 
 @app.route('/get_datacenters')
 def datacenters():
