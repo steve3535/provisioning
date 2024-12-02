@@ -55,7 +55,11 @@ def generate_lan_vm_config(vm_name, vm_specs):
           }}
         }}
 
-        guest_customization_cloud_init_user_data = base64encode(templatefile("user-data.yaml"))
+        guest_customization_cloud_init_user_data = base64encode(templatefile("user-data.yaml", {{
+          vm_dns1 = "200.1.1.218",
+          vm_dns2 = "200.1.1.163"          
+        }}))
+
         nic_list {{
           subnet_uuid = var.{vm_specs['datacenter']}_subnets["{vm_specs['subnet']}"]
         }}
