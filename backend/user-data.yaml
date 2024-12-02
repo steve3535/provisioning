@@ -9,8 +9,10 @@ chpasswd:
   expire: false
 
 # SSH key configuration
-ssh_authorized_keys:
-  - ${ssh_pub_key}
+users:
+  - name: localadmin
+    ssh_authorized_keys:
+      - ${ssh_pub_key}
 
 bootcmd:
   - nmcli con mod "System ens3" connection.id ens3
