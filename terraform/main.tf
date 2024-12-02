@@ -3,6 +3,9 @@ terraform {
     nutanix = {
         source = "nutanix/nutanix"
         }
+    local = {
+        source = "hashicorp/local"
+    }        
   }
 }
 
