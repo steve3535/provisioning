@@ -2,6 +2,7 @@ env
 sshconfig
 keys
 .terraform
+certs
 
 # Python
 __pycache__/

@@ -1,5 +1,9 @@
 import yaml   
-IDM_ADMIN_PASSWORD = "L@l1xIDM#2024"                    
+import os
+from dotenv import load_dotenv
+load_dotenv()
+IDM_ADMIN_PASSWORD = os.environ.get('IDM_ADMIN_PASSWORD')
+
 def generate_terraform_config(yaml_data):                                         
     vm_data = yaml.safe_load(yaml_data)                                           
                                                                                   
@@ -65,7 +69,7 @@ def generate_lan_vm_config(vm_name, vm_specs):
         }}
       
         provisioner "local-exec" {{
-          command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '{vm_specs['hostname']},' -e env={vm_specs['environment']} -e idm_admin_password=${IDM_ADMIN_PASSWORD}  vm_config.yml -u localadmin -b"
+          command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '{vm_specs['hostname']},' -e env={vm_specs['environment']} -e idm_admin_password={IDM_ADMIN_PASSWORD}  vm_config.yml -u localadmin -b"
         }}
      }}      
     """

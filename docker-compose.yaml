@@ -2,13 +2,23 @@
 
 services:
   vm-provisioner:
-    build: .
+    build: 
+      context: .
+      args:
+        - http_proxy=http://vsl-pro-squ-001:3128
+        - https_proxy=http://vsl-pro-squ-001:3128
     ports:
       - "5500:5500"
     volumes:
-      - .env:/app/.env
+      - ./backend/.env:/app/.env:ro
       - ./terraform:/terraform
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=production
+      - http_proxy=http://vsl-pro-squ-001:3128
+      - https_proxy=http://vsl-pro-squ-001:3128
+      - HTTP_PROXY=http://vsl-pro-squ-001:3128
+      - HTTPS_PROXY=http://vsl-pro-squ-001:3128
+      - no_proxy=.lalux.local,localhost,127.0.0.1,lu687,lu652,lu653
+      - NO_PROXY=.lalux.local,localhost,127.0.0.1,lu687,lu652,lu653            
     restart: unless-stopped

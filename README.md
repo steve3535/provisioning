@@ -1,4 +1,9 @@
-# Terraform
+## Prereqs
+### DNS entries should be made
+### Linux standard firewall ports should be opened
+
+
+## Terraform
 ## Initialize it 
 * create main.tf and variables.tf to start with :)
 * best practice is to have the latest version:

@@ -66,7 +66,7 @@
             ipaadmin_principal: admin
             ipaadmin_password: "{{ idm_admin_password }}"
             ipaclient_domain: linux.lalux.local
-            ipaclient_hostname: "{{ inventory_hostname }}.lalux.local"
+            ipaclient_hostname: "{{ inventory_hostname }}"
             ipaclient_mkhomedir: yes
             ipaservers: vsl-pro-idm-001.linux.lalux.local
             ipaclient_force: yes
