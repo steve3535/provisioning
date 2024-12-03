@@ -1,0 +1,14 @@
+# docker-compose.yml
+
+services:
+  vm-provisioner:
+    build: .
+    ports:
+      - "5500:5500"
+    volumes:
+      - .env:/app/.env
+      - ./terraform:/terraform
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+    restart: unless-stopped
