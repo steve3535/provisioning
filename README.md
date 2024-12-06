@@ -66,3 +66,6 @@
   EOF
   ```  
 * the mount module used in the playbook leverages the collection **ansible.posix**
+
+## IDM
+* IDM admin password expires every 3 months.remember to adjust its value in *backend/.env*  
