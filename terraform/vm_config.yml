@@ -39,7 +39,6 @@
       yum:
         name: '*'
         state: latest
-      notify: reboot_and_wait
 
     - name: Configure second disk
       block:
