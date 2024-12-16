@@ -93,7 +93,9 @@ def get_clusters(datacenter):
         'dc1': ['lu650.lalux.local'],
         'dc3': ['lu651.lalux.local'],
         'NUT-DMZ-DC01': ['nut-dmz-01','nut-dmz-03','nut-dmz-05','nut-dmz-09'],
-        'NUT-DMZ-DC02': ['nut-dmz-02','nut-dmz-04','nut-dmz-06','nut-dmz-10']
+        'NUT-DMZ-DC02': ['nut-dmz-02','nut-dmz-04','nut-dmz-06','nut-dmz-10'],
+        'NUT-AHV-DMZ-DC01': ['nut-ahv-dmz-dc1.lalux.local'],
+        'NUT-AHV-DMZ-DC03': ['nut-ahv-dmz-dc3.lalux.local']
     }
 
     return clusters.get(datacenter,[])
