@@ -17,16 +17,32 @@ load_dotenv()
 GITLAB_URL = os.environ.get('GITLAB_URL')
 GITLAB_TOKEN = os.environ.get('GITLAB_TOKEN')
 GITLAB_PROJECT_ID = os.environ.get('GITLAB_PROJECT_ID')
+SSH_PUB_KEY = os.environ['LOCALADMIN_SSH_PUB_KEY']
 
 app = Flask(__name__)
 
-def gitlab_trigger_pipeline(tf_content):
+def gitlab_trigger_pipeline(tf_content,user_data):
     url=f"{GITLAB_URL}/api/v4/projects/{GITLAB_PROJECT_ID}/trigger/pipeline"
 
-    data={
+    # Read necessary Terraform files
+    with open('../terraform/main.tf', 'r') as f:
+        main_tf = f.read()
+    with open('../terraform/variables.tf', 'r') as f:
+        vars_tf = f.read()
+    with open('../terraform/lan_subnets.tfvars', 'r') as f:
+        subnets_tfvars = f.read()
+    with open('../terraform/storage_containers.tfvars', 'r') as f:
+        storage_tfvars = f.read()
+
+    data = {
         "token": f"{GITLAB_TOKEN}",        
-        "ref": "main",
-        "variables[TERRAFORM_CONTENT]": tf_content
+        "ref": "v2",
+        "variables[TERRAFORM_CONTENT]": tf_content,
+        "variables[USER_DATA]": user_data,
+        "variables[TF_MAIN]": main_tf,
+        "variables[TF_VARS]": vars_tf,
+        "variables[TF_VARS_LAN_SUBNETS]": subnets_tfvars,
+        "variables[TF_VARS_STORAGE]": storage_tfvars
     }
 
     try:
@@ -46,25 +62,26 @@ def basic_auth():
     return credentials
 
 def get_domains():
-    return ['LAN','DMZ']
+    return ['NUTANIX']
+
+def get_environment():
+    return ['DEV_TEST', 'RECETTE_PREPROD', 'PROD']
 
 def get_datacenters(domain):
-    if domain == "LAN":
-        return ['dc1','dc3']
-    else:
-        return ['NUT-DMZ-DC01','NUT-DMZ-DC02']
+    if domain == "NUTANIX":
+        return ['dc1','dc3','NUT-AHV-DMZ-DC01','NUT-AHV-DMZ-DC03']
+    # else:
+    #     return ['NUT-DMZ-DC01','NUT-DMZ-DC02']
 
 def get_ahv_pc(datacenter):
-    return {"dc1":"lu652.lalux.local","dc3":"lu653.lalux.local"}[datacenter]
+    return {"dc1":"lu652.lalux.local","dc3":"lu653.lalux.local","NUT-AHV-DMZ-DC01":"lu652.lalux.local","NUT-AHV-DMZ-DC03":"lu653.lalux.local"}[datacenter]
 
-def get_esx_vcenter():
-    return "lu309.lalux.local"
 def get_images(datacenter):
     images = {
         'dc1': ['rhel8-dc1'],
         'dc3': ['rhel8-dc3'],
-        'NUT-DMZ-DC01': ['esx_lib1_item'],
-        'NUT-DMZ-DC02': ['esx_lib2_item']        
+        'NUT-AHV-DMZ-DC01': ['rhel8-dc1'],
+        'NUT-AHV-DMZ-DC03': ['rhel8-dc3'],
     }
 
     return images.get(datacenter,[])
@@ -72,9 +89,9 @@ def get_images(datacenter):
 def get_clusters(datacenter):
     clusters = {
         'dc1': ['lu650.lalux.local'],
-        'dc3': ['lu651.lalux.local'],
-        'NUT-DMZ-DC01': ['nut-dmz-01','nut-dmz-03','nut-dmz-05','nut-dmz-07','nut-dmz-09'],
-        'NUT-DMZ-DC02': ['nut-dmz-02','nut-dmz-04','nut-dmz-06','nut-dmz-08','nut-dmz-10']
+        'dc3': ['lu651.lalux.local'],        
+        'NUT-AHV-DMZ-DC01': ['nut-ahv-dmz-dc1.lalux.local'],
+        'NUT-AHV-DMZ-DC03': ['nut-ahv-dmz-dc3.lalux.local']
     }
 
     return clusters.get(datacenter,[])
@@ -108,39 +125,6 @@ def get_ahv_subnets(datacenter):
 
     return subnets_names
 
-def get_esx_subnets():
-    load_dotenv()
-    username=os.getenv('ESX_USERNAME') #!!! CHANGE CREDENTIALS TO A PRIVILEGED ESX SA !!!
-    password=os.getenv('ESX_PASSWORD')
-    # set to the first ESX host since networks in vsphere are created across all hosts (unless exception)
-    esx_host = "nut-dmz-01.lalux.local"
-    vcenter = get_esx_vcenter()
-
-    try:
-        context = ssl.create_default_context()
-        context.check_hostname = False 
-        context.verify_mode = ssl.CERT_NONE 
-        
-        si = connect.SmartConnect(
-            host=vcenter,
-            user=username,
-            pwd=password,
-            sslContext=context
-        )
-        
-    except Exception as e:
-        print(f"An error occured during the connection request: {e}")
-
-    content = si.RetrieveContent()
-    network_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.Network], True)
-    networks = network_view.view
-
-    subnet_names = [network.name for network in networks if isinstance(network, vim.Network)]
-
-    connect.Disconnect(si)
-    return subnet_names 
-
-
 def get_ahv_storages(cluster):
     #couldnt get this to work with http.client -- open a support case
     load_dotenv()
@@ -157,40 +141,9 @@ def get_ahv_storages(cluster):
     return [ storage['name'] for storage in storage_containers]
 
 
-def get_esx_datastores():
-    load_dotenv()
-    username = os.getenv('ESX_USERNAME')
-    password = os.getenv('ESX_PASSWORD')
-    vcenter = get_esx_vcenter()
-
-    try:
-        context = ssl.create_default_context()
-        context.check_hostname = False 
-        context.verify_mode = ssl.CERT_NONE 
-        
-        si = connect.SmartConnect(
-            host=vcenter,
-            user=username,
-            pwd=password,
-            sslContext=context
-        )
-        
-        content = si.RetrieveContent()
-        datastore_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.Datastore], True)
-        datastores = datastore_view.view
-
-        datastore_names = [datastore.name for datastore in datastores]
-
-        connect.Disconnect(si)
-        return datastore_names
-    
-    except Exception as e:
-        print(f"An error occurred while retrieving ESX datastores: {e}")
-        return []
-
 @app.route('/')
 def index():
-    return render_template('index.html',domains=get_domains())
+    return render_template('index.html',domains=get_domains(),environments=get_environment())
 
 @app.route('/get_datacenters')
 def datacenters():
@@ -210,36 +163,54 @@ def images():
 @app.route('/get_subnets')
 def subnets():
     datacenter = request.args.get('datacenter')
-    if "DMZ" in datacenter:
-      return jsonify(get_esx_subnets())
-    else:
-      return jsonify(get_ahv_subnets(datacenter))
+    return jsonify(get_ahv_subnets(datacenter))
 
 @app.route('/get_storages')
 def storages():
     cluster = request.args.get('cluster')
     print(cluster)
-    if 'dmz' in cluster:
-        return jsonify(get_esx_datastores())
-    else:
-        return jsonify(get_ahv_storages(cluster))
+    return jsonify(get_ahv_storages(cluster))
 
 
 @app.route('/submit', methods=["POST"])
 def submit():
     try:
       yaml_data = process_vm_data(request.form)
-      #result = create_terraform_file(yaml_data)
+      print("YAML Data:", yaml_data)  # Debug print      
       result = create_terraform_file(yaml_data)
-      pipeline_response = gitlab_trigger_pipeline(result)
+      print("Terraform Config:", result)  # Debug print      
 
+      # Create user-data content
+      user_data = f"""
+      #cloud-config
+      hostname: {request.form['hostname']}
+      fqdn: {request.form['hostname']}
+      #Password configuration
+      chpasswd:
+        list: |
+          localadmin:L@lux0123456789#
+        expire: false
+
+      # User & SSH configuration
+      users:
+      - name: localadmin
+        ssh_authorized_keys:
+          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGRDbtrK0KbhYmwgCzVHRoGXKjMIyNht6IJcPbHG/b+e gitlab-runner@rh-subman.lalux.local"      
+      bootcmd:
+        - nmcli con mod "System ens3" connection.id ens3
+        - nmcli con mod ens3 ipv4.method manual ipv4.addresses {request.form['ip']}/{request.form.get('prefix', '24')} ipv4.gateway {request.form['gateway']} ipv4.dns "200.1.1.163" +ipv4.dns "200.1.1.218"
+        - nmcli con up ens3
+      """
+
+      #return "OK",200
+      pipeline_response = gitlab_trigger_pipeline(result,user_data)
       print(pipeline_response)
 
+      return jsonify({
+            "pipeline_id": pipeline_response.get('id'),
+            "pipeline_url": pipeline_response.get('web_url'),
+        }), 200      
 
-      return jsonify({"pipeline_id": pipeline_response.get('id'),
-                      "pipeline_url": pipeline_response.get('web_url'),
-                      #"terraform_content": result
-                      }),200
     except Exception as e:
         app.logger.error(f"{e}")
         return jsonify({"FATAL": f"An error occured while processing your request {e}"}),500    

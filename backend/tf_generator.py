@@ -1,33 +1,50 @@
-import yaml
+import yaml   
+import os
+from dotenv import load_dotenv
+load_dotenv()
+IDM_ADMIN_PASSWORD = os.environ.get('IDM_ADMIN_PASSWORD')
 
-def generate_terraform_config(yaml_data):
-    vm_data = yaml.safe_load(yaml_data)
-    
-    terraform_lan_config = ""
-    terraform_dmz_config = ""
-    
-    for vm_name, vm_specs in vm_data.items():
-        if vm_specs['domain'] == 'LAN':
-            terraform_lan_config += generate_lan_vm_config(vm_name, vm_specs)
-        else:
-            terraform_dmz_config += generate_dmz_vm_config(vm_name, vm_specs)
-    
-    return terraform_lan_config,terraform_dmz_config 
+def generate_terraform_config(yaml_data):                                         
+    vm_data = yaml.safe_load(yaml_data)                                           
+                                                                                  
+    terraform_lan_config = ""                                                     
+                                                                                  
+    for vm_name, vm_specs in vm_data.items():                                     
+        if vm_specs['domain'] == 'NUTANIX':                                           
+            terraform_lan_config += generate_lan_vm_config(vm_name, vm_specs)     
+        # else:                                                                     
+        #     terraform_dmz_config += generate_dmz_vm_config(vm_name, vm_specs)     
+                                                                                  
+    return terraform_lan_config
 
 def generate_lan_vm_config(vm_name, vm_specs):
     return f"""
+      # Read the SSH public key
+      data "local_file" "ssh_public_key" {{
+        filename = "keys/localadmin.pub"
+      }}
+
       resource "nutanix_virtual_machine" "{vm_name}" {{
         name                 = "{vm_specs['name']}"
         description          = ""
+        provider             = nutanix.{vm_specs['datacenter']}
         cluster_uuid         = data.nutanix_cluster.{vm_specs['datacenter']}_clusters["{vm_specs['cluster'].split('.')[0]}"].metadata.uuid 
         num_vcpus_per_socket = {vm_specs['cpu']}
         num_sockets          = 1
         memory_size_mib      = {vm_specs['mem']}
+        boot_type            = "UEFI"
 
         disk_list {{
           data_source_reference = {{
             kind = "image"
             uuid = data.nutanix_image.{vm_specs['datacenter']}_images["{vm_specs['image']}"].metadata.uuid
+          }}
+          device_properties {{
+            disk_address = {{
+              device_index = 0
+              adapter_type = "SCSI"
+            }}
+            device_type = "DISK"
           }}
         }}
 
@@ -41,69 +58,33 @@ def generate_lan_vm_config(vm_name, vm_specs):
           }}
         }}
 
+        guest_customization_cloud_init_user_data = base64encode(templatefile("user-data.yaml", {{
+          vm_dns1 = "200.1.1.218",
+          vm_dns2 = "200.1.1.163"          
+        }}))
+
         nic_list {{
           subnet_uuid = var.{vm_specs['datacenter']}_subnets["{vm_specs['subnet']}"]
-        }}  
-     }}
+        }}
+      
+        provisioner "local-exec" {{
+          command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '{vm_specs['hostname']},' -e env={vm_specs['environment']} -e idm_admin_password={IDM_ADMIN_PASSWORD}  vm_config.yml -u localadmin -b"
+        }}
+     }}      
     """
-
-def generate_dmz_vm_config(vm_name, vm_specs):
-    return f"""
-resource "vsphere_virtual_machine" "{vm_name}" {{
-  name             = "{vm_specs['name']}"
-  resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
-  datastore_id     = data.vsphere_datastore.{vm_specs['storage']}.id
-  num_cpus         = {vm_specs['cpu']}
-  memory           = {vm_specs['mem']}
-  guest_id         = "rhel8_64Guest"
-  folder           = "your_vm_folder"
-
-  network_interface {{
-    network_id = data.vsphere_network.{vm_specs['subnet']}.id
-  }}
-
-  disk {{
-    label = "disk0"
-    size  = 50
-  }}
-
-  disk {{
-    label = "disk1"
-    size  = {vm_specs['disk2_size_gb']}
-    unit_number = 1
-  }}
-
-  clone {{
-    template_uuid = data.vsphere_content_library_item.{vm_specs['image']}.id
-
-    customize {{
-      linux_options {{
-        host_name = "{vm_specs['hostname']}"
-        domain    = "example.com"
-      }}
-
-      network_interface {{
-        ipv4_address = "{vm_specs['ip']}"
-        ipv4_netmask = 24
-      }}
-
-      ipv4_gateway = "{vm_specs['gateway']}"
-    }}
-  }}
-}}
-"""
 
 # This function would be called after processing the form data
 def create_terraform_file(yaml_data):
     try:
-      terraform_lan_config,terraform_dmz_config = generate_terraform_config(yaml_data)
-      with open('../terraform/vms/lan_vms.tf', 'w') as f:
-          f.write(terraform_lan_config)
-      with open('../terraform/vms/dmz_vms.tf', 'w') as f:
-          f.write(terraform_dmz_config)
-    
-
-      return "Terraform configuration files created successfully"
+      terraform_lan_config = generate_terraform_config(yaml_data)
+      # Debug output
+      print("Generated Terraform config:")
+      print(terraform_lan_config)
+      if terraform_lan_config:
+        return terraform_lan_config
+      else:
+        return ""
+      #return "Terraform configuration files created successfully"
       
     except Exception as e:
-      return f"An error happened while creating vm definition files: {e}"
+      return f"An error happened while creating vm definition files: {e}"    

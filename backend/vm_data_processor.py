@@ -12,6 +12,7 @@ def process_vm_data(form_data):
             'name': vm_data['vm_name'],
             'hostname': vm_data['hostname'],
             'domain': vm_data['domain'],
+            'environment': vm_data['environment'],  # Added environment field
             'datacenter': vm_data['datacenter'],
             'cluster': vm_data['cluster'],
             'image': vm_data['image'],
@@ -26,5 +27,4 @@ def process_vm_data(form_data):
     }
 
     yaml_data = yaml.dump(structured_data,default_flow_style=False)
-
     return yaml_data

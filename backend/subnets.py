@@ -1,6 +1,7 @@
 import os
 import json
 import http.client
+import ssl
 from base64 import b64encode
 from dotenv import load_dotenv
 
@@ -11,7 +12,13 @@ def basic_auth():
     return b64encode(f"{username}:{password}".encode()).decode()
 
 def get_ahv_subnets(pc):    
-    conn = http.client.HTTPSConnection(pc, 9440)
+    # Create a custom SSL context that ignores certificate verification
+    context = ssl.create_default_context()
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+    
+    # Pass the SSL context to HTTPSConnection
+    conn = http.client.HTTPSConnection(pc, 9440, context=context)
     credentials = basic_auth()
     headers = {
         "Content-Type": "application/json",

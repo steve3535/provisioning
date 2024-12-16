@@ -3,9 +3,9 @@ terraform {
     nutanix = {
         source = "nutanix/nutanix"
         }
-    vsphere = {
-        source = "hashicorp/vsphere"
-        }
+    local = {
+        source = "hashicorp/local"
+    }        
   }
 }
 
@@ -60,22 +60,14 @@ data "nutanix_cluster" "dc3_clusters" {
 
 data "nutanix_image" "dc1_images" {
     for_each = local.dc1_images 
-    image_name = each.value.name 
+    image_name = each.value.name
     provider = nutanix.dc1
 }
 
 data "nutanix_image" "dc3_images" {
     for_each = local.dc3_images 
-    image_name = each.value.name  
+    #image_id = each.value.uuid
+    image_name = each.value.name
     provider = nutanix.dc3
 }
 
-# ============= VMWARE ESX INFRA ================
-
-provider "vsphere" {
-    user = var.vsphere_username
-    password = var.vsphere_password
-    vsphere_server = var.vsphere_server 
-    allow_unverified_ssl = true 
-    
-}

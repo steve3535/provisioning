@@ -1,0 +1,87 @@
+variables:
+  TF_VAR_nutanix_username: ${NUTANIX_USERNAME}
+  TF_VAR_nutanix_password: ${NUTANIX_PASSWORD}
+  TF_PLUGIN_CACHE_DIR: "/opt/infrastructure/terraform-providers"
+  # Skip provider verification
+  TF_SKIP_PROVIDER_VERIFICATION: "1"
+  TF_CLI_CONFIG_FILE: "$CI_PROJECT_DIR/terraform/.terraformrc"    
+
+default:
+  tags:
+    - tf 
+    - shell
+
+stages:
+  - prepare
+  - plan
+  - apply
+
+prepare:
+  stage: prepare
+  script:    
+    # Create directory structure first
+    - mkdir -p terraform/vms
+    - mkdir -p terraform/tfvars
+    - mkdir -p terraform/keys
+    # Create necessary Terraform files from pipeline variables
+    - echo "$TERRAFORM_CONTENT" > terraform/lan_vms.tf
+    - echo "$USER_DATA" > terraform/user-data.yaml
+    - echo "$TF_MAIN" > terraform/main.tf
+    - echo "$TF_VARS" > terraform/variables.tf
+    - echo "$TF_VARS_LAN_SUBNETS" > terraform/lan_subnets.tfvars
+    - echo "$TF_VARS_STORAGE" > terraform/storage_containers.tfvars
+    - |
+      cat > terraform/terraform.tfvars << EOF
+      nutanix_username = "${NUTANIX_USERNAME}"
+      nutanix_password = "${NUTANIX_PASSWORD}"
+      EOF    
+   # Copy instead of symlink
+    - mkdir -p terraform/.terraform
+    - cp -pr /opt/infrastructure/terraform-providers/* terraform/.terraform/
+    - cp /opt/infrastructure/linux/provisioning/terraform/.terraform.lock.hcl terraform/ 
+    - cp /opt/infrastructure/linux/provisioning/keys/localadmin.pub terraform/keys/ || echo "Copy failed"
+    - cat terraform/user-data.yaml
+    - cat terraform/vm_config.yml
+    
+
+   # Create .terraformrc for offline mode
+    - |
+      cat > terraform/.terraformrc << EOF
+      provider_installation {
+        filesystem_mirror {
+          path = "/opt/infrastructure/terraform-providers"
+        }
+        direct {
+          exclude = ["registry.terraform.io/*/*"]
+        }
+      }   
+       
+  artifacts:
+    paths:
+      - terraform/ 
+    expire_in: 1 hour
+
+plan:
+  stage: plan
+  dependencies:
+    - prepare 
+  script:
+    - cd terraform
+    - ls -la
+    - ls -la keys/ 
+    - terraform init
+    - terraform plan -var-file="lan_subnets.tfvars" -var-file="storage_containers.tfvars" --out=tfplan
+  artifacts:
+    paths:
+      - terraform/
+      - terraform/tfplan
+    expire_in: 1 week
+
+apply:
+  stage: apply
+  script:
+    - cd terraform 
+    - terraform apply -auto-approve tfplan
+  when: manual  # Requires manual approval
+  dependencies:
+    - plan 
