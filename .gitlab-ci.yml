@@ -41,6 +41,7 @@ prepare:
     - cp /opt/infrastructure/linux/provisioning/terraform/.terraform.lock.hcl terraform/ 
     - cp /opt/infrastructure/linux/provisioning/keys/localadmin.pub terraform/keys/ || echo "Copy failed"
     - cat terraform/user-data.yaml
+    - cat terraform/vm_config.yml
     
 
    # Create .terraformrc for offline mode
