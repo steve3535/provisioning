@@ -36,7 +36,7 @@ def gitlab_trigger_pipeline(tf_content,user_data):
 
     data = {
         "token": f"{GITLAB_TOKEN}",        
-        "ref": "v2",
+        "ref": "main",
         "variables[TERRAFORM_CONTENT]": tf_content,
         "variables[USER_DATA]": user_data,
         "variables[TF_MAIN]": main_tf,
